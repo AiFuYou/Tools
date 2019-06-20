@@ -39,11 +39,19 @@ data = null;
 
 def parse_hash_str(hashStr):
 	dataArr = hashStr.split(', ')
-	keysArr = [len(dataArr)]
+	keysArr = '['
+	valuesArr = '['
 	for i in xrange(0, len(dataArr)):
-		print(dataArr[i].split(': ')[0])
-		# keysArr[i] = dataArr[i].split(': ')[0]
-	# print keysArr
+		keysArr += '\'' + dataArr[i].split(': ')[0] + '\''
+		# valuesArr.append(dataArr[i].split(': ')[1])
+		valuesArr += dataArr[i].split(': ')[1];
+		if i < (len(dataArr) - 1):
+			keysArr += ', '
+			valuesArr += ', '
+	keysArr += ']'
+	valuesArr += ']'
+	print valuesArr
+	return keysArr, valuesArr
 
 def parse_excel(fileName):
 	data = xlrd.open_workbook(fileName)
@@ -66,6 +74,9 @@ def parse_excel(fileName):
 
 		for col in xrange(colStart, table.ncols):
 			keysStr += '\'' + keys[col].value + '\''
+			if table.cell(typeRow, col).value == 'hash':
+				keysArr, valuesArr = parse_hash_str(str(table.cell(typeRow + 2, col).value))
+				keysStr += ': ' + keysArr
 			if col < table.ncols - 1:
 				keysStr += ', '
 
@@ -86,9 +97,8 @@ def parse_excel(fileName):
 				elif dataType == 'f':
 					contentStr += str(float(table.cell(row, col).value))
 				elif dataType == 'hash':
-					tmpValue = str(table.cell(row, col).value)
-					contentStr += '{' + tmpValue + '}'
-					parse_hash_str(tmpValue)
+					keysArr, valuesArr = parse_hash_str(str(table.cell(row, col).value))
+					contentStr += valuesArr
 				elif dataType == 'arr':
 					contentStr += '[' + str(table.cell(row, col).value) + ']'
 
