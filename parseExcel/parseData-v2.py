@@ -11,6 +11,27 @@ fileName = 'data_test.xlsx'
 keyRow = 2#key行
 typeRow = 1#数据类型行
 
+structureStr = '''
+let sheetName = {};
+sheetName.dataKeys = dataKeys;
+sheetName.hashKeys = hashKeys;
+sheetName.data = data;
+'''
+
+def parse_hash_str(hashStr):
+	hashStr = hashStr.replace(' ', '')
+	dataArr = hashStr.split(',')
+	keysArr = '['
+	valuesArr = '['
+	for i in xrange(0, len(dataArr)):
+		keysArr += '\'' + dataArr[i].split(':')[0] + '\''
+		valuesArr += dataArr[i].split(':')[1];
+		if i < (len(dataArr) - 1):
+			keysArr += ', '
+			valuesArr += ', '
+	keysArr += ']'
+	valuesArr += ']'
+	return keysArr, valuesArr
 
 def parse_excel(fileName):
 	data = xlrd.open_workbook(fileName)
@@ -21,8 +42,9 @@ def parse_excel(fileName):
 
 		# print table.nrows, table.ncols#行数和列数
 		keys = table.row(keyRow)
-		contentStr = 'let ' + sheetName + ' = '
-
+		keysStr = '['
+		hashKeysStr = '['
+		contentStr = 'let data' + ' = '
 		colStart = 0;
 		tableType = table.cell(1, 0).value
 		if tableType == 'key':
@@ -31,17 +53,27 @@ def parse_excel(fileName):
 		elif tableType == 'index':
 			contentStr += '[\n'
 
-		for row in xrange(keyRow + 1, table.nrows):
+		for col in xrange(colStart, table.ncols):
+			if table.cell(typeRow, col).value == 'hash':
+				keysArr, valuesArr = parse_hash_str(str(table.cell(typeRow + 2, col).value))
+				keysStr += keysArr
+				if hashKeysStr != '[':
+					hashKeysStr += ', '
+				hashKeysStr += '\'' + table.cell(typeRow + 1, col).value + '\''
+			else:
+				keysStr += '\'' + keys[col].value + '\''
+			if col < table.ncols - 1:
+				keysStr += ', '
+		hashKeysStr += '];'
 
+		for row in xrange(keyRow + 1, table.nrows):
 			if tableType == 'key':
 				contentStr += '\t' + str(table.cell(row, 0).value) + ': '
 			else:
 				contentStr += '\t'
-			contentStr += '{'
+			contentStr += '['
 
 			for col in xrange(colStart, table.ncols):
-				contentStr += keys[col].value + ': '
-
 				dataType = table.cell(typeRow, col).value
 				if dataType == 'n' or dataType == 'index':
 					contentStr += str(int(table.cell(row, col).value))
@@ -50,21 +82,29 @@ def parse_excel(fileName):
 				elif dataType == 'f':
 					contentStr += str(float(table.cell(row, col).value))
 				elif dataType == 'hash':
-					contentStr += '{' + str(table.cell(row, col).value) + '}'
+					keysArr, valuesArr = parse_hash_str(str(table.cell(row, col).value))
+					contentStr += valuesArr
 				elif dataType == 'arr':
 					contentStr += '[' + str(table.cell(row, col).value) + ']'
 
 				if col < table.ncols - 1:
 					contentStr += ', '
 
-			contentStr += '},\n'
+			if row < table.nrows - 1:
+				contentStr += '],\n'
+			else:
+				contentStr += ']\n'
 
 		if tableType == 'key':
 			contentStr += '};\n'
 		elif tableType == 'index':
 			contentStr += '];\n'
 
+		keysStr += '];'
+		contentStr += 'let dataKeys = ' + keysStr + '\n'
+		contentStr += 'let hashKeys = ' + hashKeysStr + '\n'
 
+		contentStr += structureStr.replace('sheetName', sheetName);
 		contentStr += 'module.exports = ' + sheetName + ';'
 		# print contentStr
 

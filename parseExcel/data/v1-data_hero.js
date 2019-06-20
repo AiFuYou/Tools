@@ -11,6 +11,7 @@ let data = [
 	[10, 50000, 1.9, 100, 100, 100]
 ];
 let dataKeys = ['level', 'exp', 'exp_eff', 'attack', 'defense', 'hp'];
+let hashKeys = [];
 let data_hero = [];
 for (let i = 0; i < data.length; ++ i) {
 	let tmpData = {};

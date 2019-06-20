@@ -28,8 +28,18 @@ let sheetName = {};
 for (let key in data) {
 	if (data.hasOwnProperty(key)) {
 		let tmpData = {};
-		for (let j = 0; j < dataKeys.length; ++ j) {
-			tmpData[dataKeys[j]] = data[key][j];
+		let hashKeyIndex = 0;
+		for (let i = 0; i < dataKeys.length; ++ i) {
+			if (typeof dataKeys[i] === 'object') {
+				let curKey = hashKeys[hashKeyIndex];
+				tmpData[curKey] = {};
+				for (let j = 0; j < dataKeys[i].length; ++ j) {
+					tmpData[curKey][dataKeys[i][j]] = data[key][i][j];
+				}
+				++ hashKeyIndex;
+			} else {
+				tmpData[dataKeys[i]] = data[key][i];
+			}
 		}
 		sheetName[key] = tmpData;
 	}
@@ -38,19 +48,18 @@ data = null;
 '''
 
 def parse_hash_str(hashStr):
-	dataArr = hashStr.split(', ')
+	hashStr = hashStr.replace(' ', '')
+	dataArr = hashStr.split(',')
 	keysArr = '['
 	valuesArr = '['
 	for i in xrange(0, len(dataArr)):
-		keysArr += '\'' + dataArr[i].split(': ')[0] + '\''
-		# valuesArr.append(dataArr[i].split(': ')[1])
-		valuesArr += dataArr[i].split(': ')[1];
+		keysArr += '\'' + dataArr[i].split(':')[0] + '\''
+		valuesArr += dataArr[i].split(':')[1];
 		if i < (len(dataArr) - 1):
 			keysArr += ', '
 			valuesArr += ', '
 	keysArr += ']'
 	valuesArr += ']'
-	print valuesArr
 	return keysArr, valuesArr
 
 def parse_excel(fileName):
@@ -63,6 +72,7 @@ def parse_excel(fileName):
 		# print table.nrows, table.ncols#行数和列数
 		keys = table.row(keyRow)
 		keysStr = '['
+		hashKeysStr = '['
 		contentStr = 'let data' + ' = '
 		colStart = 0;
 		tableType = table.cell(1, 0).value
@@ -73,12 +83,17 @@ def parse_excel(fileName):
 			contentStr += '[\n'
 
 		for col in xrange(colStart, table.ncols):
-			keysStr += '\'' + keys[col].value + '\''
 			if table.cell(typeRow, col).value == 'hash':
 				keysArr, valuesArr = parse_hash_str(str(table.cell(typeRow + 2, col).value))
-				keysStr += ': ' + keysArr
+				keysStr += keysArr
+				if hashKeysStr != '[':
+					hashKeysStr += ', '
+				hashKeysStr += '\'' + table.cell(typeRow + 1, col).value + '\''
+			else:
+				keysStr += '\'' + keys[col].value + '\''
 			if col < table.ncols - 1:
 				keysStr += ', '
+		hashKeysStr += '];'
 
 		for row in xrange(keyRow + 1, table.nrows):
 			if tableType == 'key':
@@ -88,7 +103,6 @@ def parse_excel(fileName):
 			contentStr += '['
 
 			for col in xrange(colStart, table.ncols):
-				# contentStr += keys[col].value + ': '
 				dataType = table.cell(typeRow, col).value
 				if dataType == 'n' or dataType == 'index':
 					contentStr += str(int(table.cell(row, col).value))
@@ -116,7 +130,8 @@ def parse_excel(fileName):
 			contentStr += '];\n'
 
 		keysStr += '];'
-		contentStr += 'let dataKeys = ' + keysStr
+		contentStr += 'let dataKeys = ' + keysStr + '\n'
+		contentStr += 'let hashKeys = ' + hashKeysStr
 
 		if tableType == 'key':
 			parseStr = parseHashFunc.replace('sheetName', sheetName)
