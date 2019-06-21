@@ -72,6 +72,7 @@ def parse_excel(fileName):
 		# 	os.mkdir('out')
 		fp = open('data/v0-' + sheetName + ".js", 'w')
 		fp.write(contentStr)
+		fp.close()
 		print sheetName + ' successful!'
 
 def main():
