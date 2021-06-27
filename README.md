@@ -8,3 +8,6 @@
 
 ## SublimeText编译环境设置
 C#，node
+
+1. 修改文件中命令的目录，如`node`的命令目录为`/usr/local/bin/node`
+2. 将文件放在`/Users/ifeel/Library/Application Support/Sublime Text/Packages/User`目录下
