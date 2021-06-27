@@ -5,3 +5,6 @@
 
 ## unityaddr2line
 解析Unity崩溃堆栈
+
+## SublimeText编译环境设置
+C#，node

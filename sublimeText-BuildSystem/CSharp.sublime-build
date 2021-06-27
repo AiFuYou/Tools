@@ -1,0 +1,6 @@
+{
+	"cmd": ["rm -f ${file_path}/${file_base_name}.exe; /Library/Frameworks/Mono.framework/Versions/Current/Commands/mcs ${file}; /Library/Frameworks/Mono.framework/Versions/Current/Commands/mono ${file_path}/${file_base_name}.exe"],
+	"selector": "source.cs",
+	"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+	"shell":true,
+}
