@@ -51,7 +51,7 @@ git config hooks.allownonascii true
 git diff-index --check --cached $against --
 
 # *.lua check
-export luacheck=game/Tools/luacheck/luacheck.exe
+luacheck=game/Tools/luacheck/luacheck.exe
 luacheckCfgFilePath=game/Tools/luacheck/.luacheckrc
 for file in `git diff --cached --name-only $against`; do
 	echo $file
