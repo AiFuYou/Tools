@@ -1,0 +1,5 @@
+{
+	"cmd": ["$file"],
+	"encoding": "cp936",
+	"selector": "source.bat"
+}
