@@ -11,3 +11,9 @@ C#，node
 
 1. 修改文件中命令的目录，如`node`的命令目录为`/usr/local/bin/node`
 2. 将文件放在`/Users/ifeel/Library/Application Support/Sublime Text/Packages/User`目录下
+
+## GenByAI
+该文件夹的代码使用python语言，均由AI生成，用于解决工作中的一些小问题
+
+1. CopyMp4.py：拷贝指定目录的具有关键字的mp4文件到目标目录；
+2. 将webp格式文件转为png格式文件
